@@ -3,7 +3,7 @@
 - name: check if velero-io folder exists
   stat: 
     path: /opt/velero-io
-  register: velero-io_folder_exists
+  register: velero_io_folder_exists
   tags: velero-io
   
 - name: Create velero-io directory
@@ -12,7 +12,7 @@
     state: directory
     mode: '0755'
   tags: velero-io
-  when: velero-io_folder_exists.stat.exists == False
+  when: velero_io_folder_exists.stat.exists == False
 
 - name: Get latest Release from velero-io
   shell: curl -Lo /opt/velero-io/velero-io.tar.gz https://github.com/vmware-tanzu/velero/releases/download/$(curl -s https://api.github.com/repos/vmware-tanzu/velero/releases/latest | grep tag_name | cut -d '"' -f 4)/velero-$(curl -s https://api.github.com/repos/vmware-tanzu/velero/releases/latest | grep tag_name | cut -d '"' -f 4)-linux-amd64.tar.gz
@@ -37,7 +37,7 @@
 
 - name: Verify velero-io exists
   stat: path=/opt/velero-io/velero
-  register: velero-io_stat
+  register: velero_io_stat
   tags: velero-io
 
 - name: Configure velero-io on system bin.
@@ -45,7 +45,7 @@
     src: "/opt/velero-io/velero"
     dest: "/usr/bin/velero"
     state: link
-  when: velero-io_stat.stat.exists
+  when: velero_io_stat.stat.exists
   tags: velero-io
 
 - name: Configure velero-io on system sbin.
@@ -53,7 +53,7 @@
     src: "/opt/velero-io/velero" 
     dest: "/usr/sbin/velero"
     state: link
-  when: velero-io_stat.stat.exists
+  when: velero_io_stat.stat.exists
   tags: velero-io
 
 # Customize Per existing user
@@ -69,7 +69,7 @@
 
 - name: Create user bin directory
   file: path=/home/{{ item }}/.local/bin/ state=directory mode="a+rw"
-  when: velero-io_stat.stat.exists
+  when: velero_io_stat.stat.exists
   with_items: "{{ users.stdout_lines }}"
   tags: velero-io
 
@@ -79,12 +79,12 @@
     dest: "/home/{{ item }}/.local/bin/velero"
     state: link
   with_items: "{{ users.stdout_lines }}"
-  when: velero-io_stat.stat.exists
+  when: velero_io_stat.stat.exists
   tags: velero-io
 
 - name: Create user bin directory
   file: path=/home/{{ item }}/.local/bin/ state=directory mode="a+rw"
-  when: velero-io_stat.stat.exists
+  when: velero_io_stat.stat.exists
   with_items: "{{ users.stdout_lines }}"
   tags: velero-io
 
@@ -108,21 +108,21 @@
 - shell: which velero
   args:
     executable: /bin/bash -ilc
-  register: which_velero-io
+  register: which_velero_io
   failed_when: false
   changed_when: false
   tags: velero-io
 
 - debug:
-    var:  which_velero-io.stdout
+    var:  which_velero_io.stdout
     verbosity: 2
 
 - command: velero version
-  register: result_velero-io
+  register: result_velero_io
   failed_when: false
   changed_when: false
   tags: velero-io
 
 - debug:
-    var: result_velero-io.stdout
+    var: result_velero_io.stdout
   tags: velero-io
