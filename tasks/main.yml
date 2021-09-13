@@ -1,0 +1,128 @@
+---
+# tasks file for ansible-velero-io
+- name: check if velero-io folder exists
+  stat: 
+    path: /opt/velero-io
+  register: velero-io_folder_exists
+  tags: velero-io
+  
+- name: Create velero-io directory
+  ansible.builtin.file:
+    path: /opt/velero-io
+    state: directory
+    mode: '0755'
+  tags: velero-io
+  when: velero-io_folder_exists.stat.exists == False
+
+- name: Get latest Release from velero-io
+  shell: curl -Lo /opt/velero-io/velero-io.tar.gz https://github.com/vmware-tanzu/velero/releases/download/$(curl -s https://api.github.com/repos/vmware-tanzu/velero/releases/latest | grep tag_name | cut -d '"' -f 4)/velero-$(curl -s https://api.github.com/repos/vmware-tanzu/velero/releases/latest | grep tag_name | cut -d '"' -f 4)-linux-amd64.tar.gz
+  args:
+    warn: no
+  tags: velero-io
+
+- name: Unarchive a file that is already on the remote machine
+  ansible.builtin.unarchive:
+    src: /opt/velero-io/velero-io.tar.gz
+    dest: /opt/velero-io/
+    include: [velero]
+  tags: velero-io
+
+- name: Change file ownership, group and permissions
+  ansible.builtin.file:
+    path: /opt/velero-io/
+    owner: root
+    group: root
+    mode: '0755'
+  tags: velero-io
+
+- name: Verify velero-io exists
+  stat: path=/opt/velero-io/velero
+  register: velero-io_stat
+  tags: velero-io
+
+- name: Configure velero-io on system bin.
+  file:
+    src: "/opt/velero-io/velero"
+    dest: "/usr/bin/velero"
+    state: link
+  when: velero-io_stat.stat.exists
+  tags: velero-io
+
+- name: Configure velero-io on system sbin.
+  file:
+    src: "/opt/velero-io/velero" 
+    dest: "/usr/sbin/velero"
+    state: link
+  when: velero-io_stat.stat.exists
+  tags: velero-io
+
+# Customize Per existing user
+- name : list users to apply velero
+  shell: |
+    getent passwd | awk -F: '$3 > 999 {print $1}'
+  register: users
+  tags: velero-io
+
+- debug:
+    var: users
+    verbosity: 2
+
+- name: Create user bin directory
+  file: path=/home/{{ item }}/.local/bin/ state=directory mode="a+rw"
+  when: velero-io_stat.stat.exists
+  with_items: "{{ users.stdout_lines }}"
+  tags: velero-io
+
+- name: Configure velero-io on user bin.
+  file:
+    src: "/opt/velero-io/velero"
+    dest: "/home/{{ item }}/.local/bin/velero"
+    state: link
+  with_items: "{{ users.stdout_lines }}"
+  when: velero-io_stat.stat.exists
+  tags: velero-io
+
+- name: Create user bin directory
+  file: path=/home/{{ item }}/.local/bin/ state=directory mode="a+rw"
+  when: velero-io_stat.stat.exists
+  with_items: "{{ users.stdout_lines }}"
+  tags: velero-io
+
+- name: update velero-io on users bashrc
+  lineinfile:
+    dest: /home/{{ item }}/.bashrc
+    state: present
+    line: 'export PATH="/opt/velero-io/:$PATH"'
+  with_items: "{{ users.stdout_lines }}"
+  tags: velero-io
+  ignore_errors: true
+
+- name: update velero-io on skel bashrc
+  lineinfile:
+    dest: /etc/skel/.bashrc
+    state: present
+    line: 'export PATH="/opt/velero-io/:$PATH"'
+  tags: velero-io
+
+# Check status
+- shell: which velero
+  args:
+    executable: /bin/bash -ilc
+  register: which_velero-io
+  failed_when: false
+  changed_when: false
+  tags: velero-io
+
+- debug:
+    var:  which_velero-io.stdout
+    verbosity: 2
+
+- command: velero version
+  register: result_velero-io
+  failed_when: false
+  changed_when: false
+  tags: velero-io
+
+- debug:
+    var: result_velero-io.stdout
+  tags: velero-io
