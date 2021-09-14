@@ -25,6 +25,7 @@
     src: /opt/velero-io/velero-io.tar.gz
     dest: /opt/velero-io/
     list_files: yes
+    remote_src: yes
     extra_opts:
     - --strip=1
     - --wildcards
