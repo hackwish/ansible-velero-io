@@ -27,8 +27,9 @@
     list_files: yes
     remote_src: yes
     extra_opts:
-    - --strip=1
+    - --strip-components 1
     - --wildcards
+    - --no-anchored
     - 'velero'
   tags: velero-io
 
