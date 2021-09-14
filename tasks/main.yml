@@ -24,7 +24,11 @@
   ansible.builtin.unarchive:
     src: /opt/velero-io/velero-io.tar.gz
     dest: /opt/velero-io/
-    include: [velero]
+    list_files: yes
+    extra_opts:
+    - --strip=1
+    - --wildcards
+    - 'velero'
   tags: velero-io
 
 - name: Change file ownership, group and permissions
