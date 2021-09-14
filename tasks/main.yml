@@ -20,17 +20,20 @@
     warn: no
   tags: velero-io
 
-- name: Unarchive a file that is already on the remote machine
-  ansible.builtin.unarchive:
-    src: /opt/velero-io/velero-io.tar.gz
-    dest: /opt/velero-io/
-    # list_files: yes
-    remote_src: yes
-    extra_opts:
-    - --strip-components 1
-    - --wildcards
-    - --no-anchored
-    - 'velero'
+- name: Unarchive a file
+  shell: tar -xzf /opt/velero-io/velero-io.tar.gz --strip-components 1 --wildcards --no-anchored 'velero' -C /opt/velero-io/
+  args:
+    warn: no
+  # ansible.builtin.unarchive:
+  #   src: /opt/velero-io/velero-io.tar.gz
+  #   dest: /opt/velero-io/
+  #   # list_files: yes
+  #   remote_src: yes
+  #   extra_opts:
+  #   - --strip-components 1
+  #   - --wildcards
+  #   - --no-anchored
+  #   - 'velero'
   tags: velero-io
 
 - name: Change file ownership, group and permissions
