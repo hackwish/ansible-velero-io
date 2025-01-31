@@ -16,14 +16,14 @@
 
 - name: Get latest Release from velero-io
   shell: curl -Lo /opt/velero-io/velero-io.tar.gz https://github.com/vmware-tanzu/velero/releases/download/$(curl -s https://api.github.com/repos/vmware-tanzu/velero/releases/latest | grep tag_name | cut -d '"' -f 4)/velero-$(curl -s https://api.github.com/repos/vmware-tanzu/velero/releases/latest | grep tag_name | cut -d '"' -f 4)-linux-amd64.tar.gz
-  args:
-    warn: no
+  # args:
+  #   warn: no
   tags: velero-io
 
 - name: Unarchive a file
   shell: tar -xzf /opt/velero-io/velero-io.tar.gz --strip-components 1 --wildcards --no-anchored 'velero' -C /opt/velero-io/
-  args:
-    warn: no
+  # args:
+  #   warn: no
   # ansible.builtin.unarchive:
   #   src: /opt/velero-io/velero-io.tar.gz
   #   dest: /opt/velero-io/
